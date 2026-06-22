@@ -10,21 +10,25 @@ import (
 )
 
 func SetupApp() *fiber.App {
+	log.Println("Creating Fiber app")
+
 	app := fiber.New()
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	_ = godotenv.Load()
 
+	log.Println("Connecting to DB")
 	db.ConnectDB()
 
-	app.Get("/",func (c *fiber.Ctx) error {
+	log.Println("Registering routes")
+
+	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Welcome To Todo made with fiber")
 	})
 
 	routes.AuthRoutes(app)
 	routes.TodoRoutes(app)
+
+	log.Println("Setup complete")
 
 	return app
 }
