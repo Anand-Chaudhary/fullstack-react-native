@@ -36,6 +36,7 @@ func RegisterUser(c *fiber.Ctx) error {
 
 	if err == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
 			"error": "User already exists",
 		})
 	}
@@ -46,6 +47,7 @@ func RegisterUser(c *fiber.Ctx) error {
 	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
 			"error": "Could not hash password",
 		})
 	}
@@ -58,6 +60,7 @@ func RegisterUser(c *fiber.Ctx) error {
 	result, err := db.DB.Collection("users").InsertOne(c.Context(), userDoc)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
 			"error": "Could not create user",
 		})
 	}
@@ -65,6 +68,7 @@ func RegisterUser(c *fiber.Ctx) error {
 	userID, ok := result.InsertedID.(primitive.ObjectID)
 	if !ok {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
 			"error": "Invalid user ID",
 		})
 	}
@@ -77,6 +81,7 @@ func RegisterUser(c *fiber.Ctx) error {
 	t, err := token.SignedString(jwtSecret)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
 			"error": "Could not create token",
 		})
 	}
@@ -89,6 +94,7 @@ func RegisterUser(c *fiber.Ctx) error {
 	})
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"success": true,
 		"message": "User registered successfully",
 		"token":   t,
 		"user": fiber.Map{
@@ -107,18 +113,18 @@ func LoginUser(c *fiber.Ctx) error {
 	var body request
 
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Cannot parse request"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"success": false, "error": "Cannot parse request"})
 	}
 
 	var user models.User
 
 	err := db.DB.Collection("users").FindOne(c.Context(), bson.M{"email": body.Email}).Decode(&user)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"success": false, "error": "Invalid credentials"})
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"success": false, "error": "Invalid credentials"})
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -128,7 +134,7 @@ func LoginUser(c *fiber.Ctx) error {
 
 	t, err := token.SignedString(jwtSecret)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not login"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"success": false, "error": "Could not login"})
 	}
 
 	c.Cookie(&fiber.Cookie{
@@ -139,6 +145,7 @@ func LoginUser(c *fiber.Ctx) error {
 	})
 
 	return c.JSON(fiber.Map{
+		"success": true,
 		"message": "Logged in successfully",
 		"token":   t,
 		"user": fiber.Map{
@@ -156,5 +163,5 @@ func LogoutUser(c *fiber.Ctx) error {
 		HTTPOnly: true,
 	})
 
-	return c.JSON(fiber.Map{"message": "Logged out successfully"})
+	return c.JSON(fiber.Map{"success": true, "message": "Logged out successfully"})
 }
