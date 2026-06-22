@@ -1,8 +1,6 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-console.log("Backend URL:", process.env.EXPO_PUBLIC_API_URL)
-
 // eslint-disable-next-line import/no-named-as-default-member
 const axiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
