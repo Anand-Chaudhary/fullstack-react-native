@@ -15,7 +15,10 @@ axiosInstance.interceptors.request.use(
     const token = await SecureStore.getItemAsync("token");
 
     if (token) {
+      console.log("Token found:", token);
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.log("No token found in SecureStore");
     }
 
     return config;
@@ -27,6 +30,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error?.response?.status === 401) {
+      console.log("401 Unauthorized - clearing token");
       await SecureStore.deleteItemAsync("token");
     }
 

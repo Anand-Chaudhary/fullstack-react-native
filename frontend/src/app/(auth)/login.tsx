@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as SecureStore from "expo-secure-store";
 import { loginApi } from "@/src/services/api/auth.api";
+import { storeToken } from "@/src/services/auth.utils";
 import Toast from "react-native-toast-message";
 
 export default function LoginScreen() {
@@ -28,7 +29,7 @@ export default function LoginScreen() {
             const res = await loginApi(email, password);
 
             if (res?.success && res?.token) {
-                await SecureStore.setItemAsync("token", res.token);
+                await storeToken(res.token);
                 Toast.show({
                     type: "success",
                     text1: res?.message
