@@ -9,8 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "build:android": "expo build -p android",
-    "build:ios": "expo build -p ios"
+    "build:android": "eas build -p android",
+    "build:ios": "eas build -p ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
